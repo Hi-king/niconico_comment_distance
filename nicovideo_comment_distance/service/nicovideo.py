@@ -84,13 +84,19 @@ class VideoInfo:
     def comments(self, size=10):
         def comments_generator():
             response = self.__fetch_comment()
-            for chat in reversed(response.find("packet").findAll("chat")):
+            comments_soup = list(reversed(response.find("packet").findAll("chat")[:-2]))
+            if len(comments_soup) == 0: raise StopIteration
+            for chat in comments_soup:
+                print chat
                 comment = Comment(chat.string, int(chat["date"]))
                 yield comment
 
             while True:
+                print comment.date
                 response = self.__fetch_comment(date=comment.date)
-                for chat in reversed(response.find("packet").findAll("chat")):
+                comments_soup = list(reversed(response.find("packet").findAll("chat")[:-2]))
+                if len(comments_soup) == 0: raise StopIteration
+                for chat in comments_soup:
                     comment = Comment(chat.string, int(chat["date"]))
                     yield comment
 
