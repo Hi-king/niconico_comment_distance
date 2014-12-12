@@ -68,6 +68,12 @@ class Comment:
         cyclic_normalized = self.cyclic_normalize(normalized)
         return cyclic_normalized
 
+class VideoMeta:
+    def __init__(self, video_id, title, description, comment_num, **lest_dict):
+        self.video_id = video_id
+        self.title = title
+        self.description = description
+        self.comment_num = comment_num
 
 
 class VideoInfo:
@@ -89,6 +95,7 @@ class VideoInfo:
             for chat in comments_soup:
                 print chat
                 comment = Comment(chat.string, int(chat["date"]))
+                if comment.text is None: continue
                 yield comment
 
             while True:
@@ -98,6 +105,7 @@ class VideoInfo:
                 if len(comments_soup) == 0: raise StopIteration
                 for chat in comments_soup:
                     comment = Comment(chat.string, int(chat["date"]))
+                    if comment.text is None: continue
                     yield comment
 
         return itertools.islice(comments_generator(), 0, size)
@@ -158,8 +166,13 @@ class Nicovideo:
 
     def getvideoinfo(self, video_id):
         flvinfo = self.__getflvinfo(video_id)
-
         return VideoInfo(video_id, **flvinfo)
+
+    def getvideometa(self, video_id):
+        url = "http://ext.nicovideo.jp/api/getthumbinfo/{}".format(video_id)
+        video_meta_soup = BeautifulSoup(self.browser.open(url).read())
+        thumb_dict = {item.name: item.text for item in video_meta_soup.find("thumb").findChildren(recursive=False)}
+        return VideoMeta(**thumb_dict)
 
     def __getflvinfo(self, video_id):
         url = "http://flapi.nicovideo.jp/api/getflv/{}".format(video_id)

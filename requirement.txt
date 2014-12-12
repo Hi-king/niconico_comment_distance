@@ -1,2 +1,5 @@
 beautifulsoup
 mechanize
+placeholder
+scipy
+scikit-learn
