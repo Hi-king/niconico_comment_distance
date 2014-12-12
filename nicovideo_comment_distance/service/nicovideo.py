@@ -10,14 +10,57 @@ import time
 import unicodedata
 import itertools
 import os
-
-###########
-## const ##
-###########
+import pickle
 
 class Config:
     MAIL = os.environ.get("MAIL")
     PASS = os.environ.get("PASS")
+    DIR = os.path.dirname(__file__)+"/../../static"
+    @staticmethod
+    def comment_cache_filepath(video_id):
+        return Config.DIR + "/{}".format(video_id)
+    @staticmethod
+    def has_comment_cache(video_id):
+        return os.path.isfile(Config.comment_cache_filepath(video_id))
+    @staticmethod
+    def comment_from_cache(video_id):
+        with open(Config.comment_cache_filepath(video_id)) as f:
+            return pickle.load(f)
+    @staticmethod
+    def set_comment_cache(video_id, data):
+        with open(Config.comment_cache_filepath(video_id), "w+") as f:
+            return pickle.dump(data, f)
+
+    @staticmethod
+    def videoinfo_cache_filepath(video_id):
+        return Config.DIR + "/info/{}".format(video_id)
+    @staticmethod
+    def has_videoinfo_cache(video_id):
+        return os.path.isfile(Config.videoinfo_cache_filepath(video_id))
+    @staticmethod
+    def videoinfo_from_cache(video_id):
+        with open(Config.videoinfo_cache_filepath(video_id)) as f:
+            return pickle.load(f)
+    @staticmethod
+    def set_videoinfo_cache(video_id, data):
+        with open(Config.videoinfo_cache_filepath(video_id), "w+") as f:
+            return pickle.dump(data, f)
+
+    @staticmethod
+    def videometa_cache_filepath(video_id):
+        return Config.DIR + "/meta/{}".format(video_id)
+    @staticmethod
+    def has_videometa_cache(video_id):
+        return os.path.isfile(Config.videometa_cache_filepath(video_id))
+    @staticmethod
+    def videometa_from_cache(video_id):
+        with open(Config.videometa_cache_filepath(video_id)) as f:
+            return pickle.load(f)
+    @staticmethod
+    def set_videometa_cache(video_id, data):
+        with open(Config.videometa_cache_filepath(video_id), "w+") as f:
+            return pickle.dump(data, f)
+
 
 Browser = mechanize.Browser()
 Browser.set_handle_robots(False)
@@ -79,6 +122,7 @@ class VideoMeta:
 class VideoInfo:
     def __init__(self, video_id, thread_id, ms, user_id, **lest_dict):
         # url = "http://flapi.nicovideo.jp/api/getflv/{}".format(video_id)
+        self.video_id = video_id
         self.thread_id = thread_id
         self.ms = ms
         self.user_id = user_id
@@ -88,6 +132,10 @@ class VideoInfo:
         self.waybackkey = self.__getwaybackkey()["waybackkey"]
 
     def comments(self, size=10):
+        # cache
+        if Config.has_comment_cache(video_id=self.video_id):
+            return Config.comment_from_cache(video_id=self.video_id)[:size]
+
         def comments_generator():
             response = self.__fetch_comment()
             comments_soup = list(reversed(response.find("packet").findAll("chat")[:-2]))
@@ -108,7 +156,9 @@ class VideoInfo:
                     if comment.text is None: continue
                     yield comment
 
-        return itertools.islice(comments_generator(), 0, size)
+        ret = list(itertools.islice(comments_generator(), 0, size))
+        Config.set_comment_cache(self.video_id, ret)
+        return ret
         # for comment in itertools.islice(comments_generator(), 0, size):
         #     print "\t".join([str(comment.date), comment.text.encode("utf-8")])
 
@@ -165,14 +215,25 @@ class Nicovideo:
 
 
     def getvideoinfo(self, video_id):
-        flvinfo = self.__getflvinfo(video_id)
-        return VideoInfo(video_id, **flvinfo)
+        if Config.has_videoinfo_cache(video_id=video_id):
+            return Config.videoinfo_from_cache(video_id=video_id)
+        else:
+            print "video id =",video_id
+            flvinfo = self.__getflvinfo(video_id)
+            vinfo = VideoInfo(video_id, **flvinfo)
+            Config.set_videoinfo_cache(video_id, vinfo)
+            return vinfo
 
     def getvideometa(self, video_id):
-        url = "http://ext.nicovideo.jp/api/getthumbinfo/{}".format(video_id)
-        video_meta_soup = BeautifulSoup(self.browser.open(url).read())
-        thumb_dict = {item.name: item.text for item in video_meta_soup.find("thumb").findChildren(recursive=False)}
-        return VideoMeta(**thumb_dict)
+        if Config.has_videometa_cache(video_id=video_id):
+            return Config.videometa_from_cache(video_id=video_id)
+        else:
+            url = "http://ext.nicovideo.jp/api/getthumbinfo/{}".format(video_id)
+            video_meta_soup = BeautifulSoup(self.browser.open(url).read())
+            thumb_dict = {item.name: item.text for item in video_meta_soup.find("thumb").findChildren(recursive=False)}
+            vmeta = VideoMeta(**thumb_dict)
+            Config.set_videometa_cache(video_id, vmeta)
+            return vmeta
 
     def __getflvinfo(self, video_id):
         url = "http://flapi.nicovideo.jp/api/getflv/{}".format(video_id)
@@ -186,10 +247,10 @@ class Nicovideo:
         return unquoted_dict
 
 
-    def comment(self, video_id):
-        print "http://msg.nicovideo.jp/{}/api".format(video_id)
-        url = urllib2.urlopen("http://msg.nicovideo.jp/{}/api".format(video_id))
-        print url.read()
+    # def comment(self, video_id):
+    #     print "http://msg.nicovideo.jp/{}/api".format(video_id)
+    #     url = urllib2.urlopen("http://msg.nicovideo.jp/{}/api".format(video_id))
+    #     print url.read()
 
     def __htmlentity2unicode(self, text):
         # 正規表現のコンパイル
