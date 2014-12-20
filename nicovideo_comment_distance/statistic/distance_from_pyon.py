@@ -6,16 +6,17 @@ import collections
 import math
 
 class Distance(object):
-    def __init__(self, distance, meta1, meta2):
+    def __init__(self, distance, meta1, meta2, sampledif):
         self.distance = distance
         self.meta1 = meta1
         self.meta2 = meta2
+        self.sampledif = sampledif
 
 class DistanceFromPyon(object):
     """
     特定動画動画からの距離を計算する
     """
-    COMMENT_SIZE = 30000 #一動画あたり何コメントまで考慮するか
+    COMMENT_SIZE = 3000 #一動画あたり何コメントまで考慮するか
     TOP_WORDS_NUM = 30 #一動画あたり上位何コメントまでを
 
     def __init__(self, target_video_id, ids_for_train):
@@ -47,7 +48,8 @@ class DistanceFromPyon(object):
             if comment.text in self.words:
                 vector[comment.text] += 1
         norm = math.sqrt(sum([val*val for val in vector.values()]))
-        return [float(val)/norm for val in vector.values()]
+        if norm == 0: return []
+        return [float(vector[word])/norm for word in self.words]
 
     def distance(self, video_id):
         """
@@ -58,8 +60,10 @@ class DistanceFromPyon(object):
         comments = self.nicovideo.getvideoinfo(video_id).comments(self.COMMENT_SIZE)
         vector = self.__calc_vector(comments)
         meta = self.nicovideo.getvideometa(video_id)
+        differs = [{"name": word, "differ": abs(thisval-otherval), "thisval": thisval, "otherval": otherval} for thisval, otherval, word in zip(self.vector, vector, self.words)]
+        differs.sort(key=lambda x: -x["differ"])
         distance = sum([thisval*otherval for thisval, otherval in zip(self.vector, vector)])
-        return Distance(distance=distance, meta1=self.meta, meta2=meta)
+        return Distance(distance=distance, meta1=self.meta, meta2=meta, sampledif=differs[:10])
 
 
 

@@ -1,6 +1,8 @@
 beautifulsoup
 mechanize
 placeholder
+numpy
 scipy
 scikit-learn
 Flask
+chartkick

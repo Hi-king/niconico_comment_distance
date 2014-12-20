@@ -112,11 +112,12 @@ class Comment:
         return cyclic_normalized
 
 class VideoMeta:
-    def __init__(self, video_id, title, description, comment_num, **lest_dict):
+    def __init__(self, video_id, title, description, comment_num, thumbnail_url, **lest_dict):
         self.video_id = video_id
         self.title = title
         self.description = description
         self.comment_num = comment_num
+        self.thumbnail_url = thumbnail_url
 
 
 class VideoInfo:
@@ -134,14 +135,15 @@ class VideoInfo:
     def comments(self, size=10):
         # cache
         if Config.has_comment_cache(video_id=self.video_id):
-            return Config.comment_from_cache(video_id=self.video_id)[:size]
+            # return Config.comment_from_cache(video_id=self.video_id)[:size]
+            return Config.comment_from_cache(video_id=self.video_id) #キャッシュがあるときは全部使う
 
         def comments_generator():
             response = self.__fetch_comment()
             comments_soup = list(reversed(response.find("packet").findAll("chat")[:-2]))
             if len(comments_soup) == 0: raise StopIteration
             for chat in comments_soup:
-                print chat
+                # print chat
                 comment = Comment(chat.string, int(chat["date"]))
                 if comment.text is None: continue
                 yield comment
@@ -231,6 +233,7 @@ class Nicovideo:
             url = "http://ext.nicovideo.jp/api/getthumbinfo/{}".format(video_id)
             video_meta_soup = BeautifulSoup(self.browser.open(url).read())
             thumb_dict = {item.name: item.text for item in video_meta_soup.find("thumb").findChildren(recursive=False)}
+            thumb_dict["video_id"] = video_id
             vmeta = VideoMeta(**thumb_dict)
             Config.set_videometa_cache(video_id, vmeta)
             return vmeta

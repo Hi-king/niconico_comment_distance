@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>{{ title }}はごちうさにどれだけ近いのか</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="/ck/static/chartkick.js"></script>
+</head>
+<body>
+<div class="container">
+  <div class='header'>
+    <nav class='navbar navbar-default' role='navigation'>
+      <div class='container-fluid'>
+        <div class='navbar-header'>
+          <a class='navbar-brand' href='/'><span class="glyphicon glyphicon-search"></span>ごちうさ難民はどこへ行ったか</a>
+        </div>
+      </div>
+    </nav>
+  </div>
+    <div class="row text-center">
+        <h1 class="page-header">{{ title }}の難民救済力は{{ (10000*power)|int }}で，
+              {% if power > 0.2 %}
+                <span class="label label-danger">聖地</span>
+              {% elif power > 0.13 %}
+                <span class="label label-warning">難民キャンプ</span>
+              {% elif power > 0.1 %}
+                <span class="label label-info">開拓地</span>
+              {% else %}
+                <span class="label label-default">荒野</span>
+              {% endif %}
+        レベル
+        </h1>
+        <script type="text/javascript" src="http://ext.nicovideo.jp/thumb_watch/{{ video_id }}?w=490&h=307"></script><noscript><a href="http://www.nicovideo.jp/watch/{{ video_id }}"></a></noscript>
+    </div>
+    <div class="row">
+        <div class="col-xs-7">
+            {% bar_chart chartdata with library={"title": {"text": "代表的なコメントのごちうさとのコメント傾向の違い"}, "xAxis": {"title": {"text": "comment"}}, "yAxis": {"title": {"text": "少ない - ごちうさに比べて - 多い"}}} %}
+        </div>
+        <div class="col-xs-5">
+            <table class="table">
+                {% for diff in sample_diffs %}
+                <tr>
+                    <td>{{ "ABCDEFGHIJKLMNOP"[loop.index-1] }}</td><td>{{ diff["name"] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <div class="row text-right">
+        <a href="https://twitter.com/share" class="twitter-share-button" data-text="{{ title }}の難民救済力は{{ (10000*power)|int }}で，{% if power > 0.2 %}聖地{% elif power > 0.13 %}難民キャンプ{% elif power > 0.1 %}開拓地{% else %}荒野{% endif %}レベル" data-hashtags="ごちうさ難民">Tweet</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+        <a href="http://b.hatena.ne.jp/entry/http://pyon.hi-king.me" class="hatena-bookmark-button" data-hatena-bookmark-title="ごちうさ難民はどこへ向かったか" data-hatena-bookmark-layout="standard-balloon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="https://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
+    </div>
+    <div class="row">
+        <h1 class="page-header">難民キャンプを探す</h1>
+        <div class="jumbotron">
+            <p>ごちうさ難民救済力を図りたい動画のURLを入力</p>
+            <form action="/distance">
+                http://www.nicovideo.jp/watch/
+                <input type="text" value="1365661495" name="video_id" />
+                <input type="submit" class="btn btn-primary" value="計測する" />
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <h1 class="page-header">最近の結果</h1>
+    </div>
+    <table class="table">
+        <tr>
+            <th></th>
+            <th>title</th>
+            <th></th>
+            <th>救済力</th>
+        </tr>
+    {% for video_data in video_id_queue %}
+        <tr>
+            <td>
+                <img width="80px" src="{{ video_data["thumbnail_url"] }}" />
+            </td>
+            <td>
+              {% if video_data["distance"] > 0.2 %}
+                <span class="label label-danger">聖地</span>
+              {% elif video_data["distance"] > 0.13 %}
+                <span class="label label-warning">難民キャンプ</span>
+              {% elif video_data["distance"] > 0.1 %}
+                <span class="label label-info">開拓地</span>
+              {% else %}
+                <span class="label label-default">荒野</span>
+              {% endif %}
+                <br />{{ video_data["title"] }}
+            </td>
+            <td><a href="/view/{{ video_data["id"] }}">成分をみる</a></td>
+            <td> {{ (10000*video_data["distance"])|int }} </td>
+        </tr>
+    {% endfor %}
+    </table>
+     <footer class='footer'>
+             <div class="row text-right">
+        <a href="https://twitter.com/share" class="twitter-share-button" data-text="{{ title }}の難民救済力は{{ (10000*power)|int }}で，{% if power > 0.2 %}聖地{% elif power > 0.13 %}難民キャンプ{% elif power > 0.1 %}開拓地{% else %}荒野{% endif %}レベル" data-hashtags="ごちうさ難民">Tweet</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+        <a href="http://b.hatena.ne.jp/entry/http://pyon.hi-king.me" class="hatena-bookmark-button" data-hatena-bookmark-title="ごちうさ難民はどこへ向かったか" data-hatena-bookmark-layout="standard-balloon" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="https://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
+    </div>
+
+        <hr>
+        <p class='text-center'>
+          <a href='https://twitter.com/Hi_king'>@Hi_king</a>
+        </p>
+      </footer>
+</div>
+</body>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-46523985-3', 'auto');
+  ga('send', 'pageview');
+
+</script>
+</html>
