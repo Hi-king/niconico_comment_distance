@@ -14,12 +14,9 @@ VIDEO_DESCRIPTION = (os.environ.get("DESCRIPTION") if not os.environ.get("DESCRI
 filepath = os.path.dirname(__file__)+"/../videos/14spring.dat"
 with open(filepath) as f:
     smids = filter(lambda x: len(x)>0, [line.rstrip() for line in f])
-pyon_service = nicovideo_comment_distance.statistic.DistanceFromPyon(TARGET_VIDEO_ID, smids)
+pyon_service = nicovideo_comment_distance.statistic.DistanceFromPyon(TARGET_VIDEO_ID, smids+[TARGET_VIDEO_ID])
 
 app = Flask(__name__)
-# app.jinja_env.add_extention('chartkick.ext.charts')
-# app.jinja_env = jinja2.Environment(extensions=['chartkick.ext.charts'])
-# app.jinja_env = jinja2.Environment(extensions=['chartkick.ext.charts'])
 
 ck = Blueprint('ck_page', __name__, static_folder=chartkick.js(), static_url_path='/static')
 app.register_blueprint(ck, url_prefix='/ck')
