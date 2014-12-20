@@ -4,8 +4,6 @@ import sys
 import os
 import re
 import chartkick
-import urllib2
-import jinja2
 sys.path.append(os.path.dirname(__file__)+"/..")
 import nicovideo_comment_distance
 
@@ -99,4 +97,5 @@ def each_view(video_id):
 if __name__ == "__main__":
     debug = (not os.environ.get("DEBUG") is None)
     print debug
-    app.run(debug=debug, host="0.0.0.0")
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 5000
+    app.run(debug=debug, host="0.0.0.0", port=port)
