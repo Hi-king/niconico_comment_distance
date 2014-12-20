@@ -25,6 +25,10 @@
 ごちうさ分析例: <http://hi-king.hatenablog.com/entry/2014/12/13/091527>
 
 
+陰陽師分析例
+
+<img width="50%" src="https://raw.githubusercontent.com/Hi-king/niconico_comment_distance/master/README/onmyoji.png" >
+
 
 Dockerで試す
 ---------------
