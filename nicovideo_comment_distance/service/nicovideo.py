@@ -70,20 +70,12 @@ class Comment:
         self.text = self.normalize(text)
         self.date = date
 
-    # def str_ignore_invalid_char(self, text):
-    #     """
-    #     参考: http://d.hatena.ne.jp/torasenriwohashiru/20110806/1312558290
-    #     """
-    #     if isinstance(text, unicode):
-    #         return unicodedata.normalize('NFKC', text)
-    #     return text
-
     def cyclic_normalize(self, text):
         """
-        (1,2,3)文字の連続を吸収
+        (1,2,3,4)文字の連続を吸収
         e.g. wwwwww -> w
         """
-        lasts = [" ", " ", "  ", "   "]
+        lasts = [" ", " ", "  ", "   ", "    "]
         i = 0
         ret = ""
         while i < len(text):
@@ -95,6 +87,7 @@ class Comment:
                 if text[i:i+1] == lasts[1]: i+=1
                 elif text[i:i+2] == lasts[2]: i+=2
                 elif text[i:i+3] == lasts[3]: i+=3
+                elif text[i:i+4] == lasts[4]: i+=4
                 else: break
         return ret
 
@@ -161,8 +154,6 @@ class VideoInfo:
         ret = list(itertools.islice(comments_generator(), 0, size))
         Config.set_comment_cache(self.video_id, ret)
         return ret
-        # for comment in itertools.islice(comments_generator(), 0, size):
-        #     print "\t".join([str(comment.date), comment.text.encode("utf-8")])
 
 
 
@@ -244,19 +235,11 @@ class Nicovideo:
     def __getflvinfo(self, video_id):
         url = "http://flapi.nicovideo.jp/api/getflv/{}".format(video_id)
         response_string = self.browser.open(url).readline()
-#         response_string = """thread_id=1173108780&l=319&url=http%3A%2F%2Fsmile-pcm42.nicovideo.jp%2Fsmile%3Fv%3D9.0468&ms=http%3A%2F%2Fmsg.nicovideo.jp%2F10%2Fapi%2F&ms_sub=http%3A%
-# 2F%2Fsub.msg.nicovideo.jp%2F10%2Fapi%2F&user_id=2033423&is_premium=1&nickname=%E3%81%AF%E3%81%84%E3%81%8F&time=1418055816378&done=true&hms=hiroba.nicovideo.jp&hmsp=2592&hmst=680&hmstk=1418055876.x3K0d2A5bw9djRNY8
-# 9wbZDHman0"""
         raw_list = [token.split("=") for token in response_string.split("&")]
         unquoted_dict = dict([[k, urllib2.unquote(v)] for k,v in raw_list])
         print unquoted_dict
         return unquoted_dict
 
-
-    # def comment(self, video_id):
-    #     print "http://msg.nicovideo.jp/{}/api".format(video_id)
-    #     url = urllib2.urlopen("http://msg.nicovideo.jp/{}/api".format(video_id))
-    #     print url.read()
 
     def __htmlentity2unicode(self, text):
         # 正規表現のコンパイル

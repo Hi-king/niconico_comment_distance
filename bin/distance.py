@@ -22,9 +22,6 @@ if __name__ == '__main__':
     with open(sys.argv[1]) as f:
         smids = filter(lambda x: len(x)>0, [line.rstrip() for line in f])
 
-    # video_meta_dict = {k: nicovideo.getvideometa(k) for k in smids}
-    # with open(DIR+"/metas.pickle", "w+") as f:
-    #     pickle.dump(video_meta_dict, f)
     with open(DIR+"/metas.pickle") as f:
         video_meta_dict = pickle.load(f)
 
@@ -55,21 +52,9 @@ if __name__ == '__main__':
             if comment.text in words:
                 word_dict[comment.text] += 1
 
-        # for k,v in word_dict.items():
-        #     vector.ap
-        #     video_matrix[k].append(v)
         video_matrix.append([word_dict[word] for word in words])
 
     mat = scipy.array(video_matrix, scipy.float32)
-
-    # for word, vec in zip(words, mat.T):
-    #     print word, vec
-
-
-    # for k,v in video_matrix.items():
-    #     print k
-    #     print v
-
     #tf
     tf = 0.5+0.5*mat/(mat.max(axis=1).reshape(mat.shape[0],1))
 
@@ -79,25 +64,8 @@ if __name__ == '__main__':
     tfidf = tf * idf
     print tfidf
 
-    # pca = sklearn.decomposition.PCA(n_components=2)
-    #
-    # coordinates = {}
-    # for id, [x,y] in zip(smids, pca.fit_transform(tf)):
-    #     coordinates[id] = [x, y]
-    #     print id,x,y
-    # for id, [x,y] in coordinates.items():
-    #     tx, ty = coordinates["1397552685"]
-    #     print id, scipy.sqrt((tx-x)**2 + (ty-y)**2)
-
-
-
     raw_vecs = {id: vec for id, vec in zip(smids, mat)}
     shows = []
-    ## euclid
-    # for id, vec in raw_vecs.items():
-    #     dims = [[w, abs(x-tx), [x,tx]] for w,x,tx in zip(words, vec, raw_vecs["1397552685"])]
-    #     dims.sort(key=lambda x: -x[1])
-    #     shows.append([id, scipy.linalg.norm(vec - raw_vecs["1397552685"]), video_meta_dict[id].title, dims[:5]])
 
     ## cosine
     for id, vec in raw_vecs.items():
