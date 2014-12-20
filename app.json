@@ -1,0 +1,8 @@
+{
+  "name": "niconico_comment_distance",
+  "env": {
+      "VIDEO_ID": "sm9",
+      "MAIL": "",
+      "PASS": ""
+  }
+}
