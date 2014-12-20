@@ -3,6 +3,7 @@
   "env": {
       "VIDEO_ID": "sm9",
       "MAIL": "",
-      "PASS": ""
+      "PASS": "",
+      "DESCRIPTION": ""
   }
 }

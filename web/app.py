@@ -9,7 +9,7 @@ import nicovideo_comment_distance
 
 
 TARGET_VIDEO_ID = os.environ.get("VIDEO_ID") if not os.environ.get("VIDEO_ID") is None else "1397552685"
-VIDEO_DESCRIPTION = os.environ.get("VIDEO_DESCRIPTION") if not os.environ.get("VIDEO_DESCRIPTION") is None else TARGET_VIDEO_ID
+VIDEO_DESCRIPTION = (os.environ.get("DESCRIPTION") if not os.environ.get("DESCRIPTION") is None else TARGET_VIDEO_ID).decode("utf-8")
 
 filepath = os.path.dirname(__file__)+"/../videos/14spring.dat"
 with open(filepath) as f:
