@@ -10,11 +10,13 @@ sys.path.append(os.path.dirname(__file__)+"/..")
 import nicovideo_comment_distance
 
 
+TARGET_VIDEO_ID = os.environ.get("VIDEO_ID") if not os.environ.get("VIDEO_ID") is None else "1397552685"
+VIDEO_DESCRIPTION = os.environ.get("VIDEO_DESCRIPTION") if not os.environ.get("VIDEO_DESCRIPTION") is None else TARGET_VIDEO_ID
 
 filepath = os.path.dirname(__file__)+"/../videos/14spring.dat"
 with open(filepath) as f:
     smids = filter(lambda x: len(x)>0, [line.rstrip() for line in f])
-pyon_service = nicovideo_comment_distance.statistic.DistanceFromPyon("1397552685", smids)
+pyon_service = nicovideo_comment_distance.statistic.DistanceFromPyon(TARGET_VIDEO_ID, smids)
 
 app = Flask(__name__)
 # app.jinja_env.add_extention('chartkick.ext.charts')
@@ -90,7 +92,8 @@ def each_view(video_id):
         chartdata=[[
                        chr(ord("A")+i),
                        diff["otherval"]-diff["thisval"]] for i,diff in enumerate(distance.sampledif)],
-        video_id_queue=video_queue.nonull_queue()
+        video_id_queue=video_queue.nonull_queue(),
+        description=VIDEO_DESCRIPTION
     )
 
 if __name__ == "__main__":
