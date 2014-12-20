@@ -209,6 +209,9 @@ class Nicovideo:
         self.log_in()
 
     def log_in(self):
+        print "login"
+        print Config.MAIL
+        print Config.PASS
         self.browser.open("https://secure.nicovideo.jp/secure/login?site=niconico")
         self.browser.select_form(nr=0)
         self.browser["mail_tel"]=Config.MAIL
